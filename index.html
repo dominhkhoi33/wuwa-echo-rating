@@ -53,14 +53,23 @@
         .selected {
             background-color: #A4EDDA !important;
         }
+        .result-box {
+            background-color: #C8E6C9; /* Xanh lục nhạt */
+            padding: 10px;
+            margin-top: 15px;
+            border-radius: 5px;
+            display: inline-block;
+            font-weight: bold;
+            border: 2px solid #388E3C; /* Viền xanh đậm */
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Wuwa Echo Rating</h1>
         <h3>Mục Chọn Nhập điểm</h3>
-        <p>Tổng điểm: <span id="finalScore">0</span></p>
-        <p id="ratingMessage">Your echo is Meh</p>
+        <p><span class="result-box">Tổng điểm: <span id="finalScore">0</span></span></p>
+        <p class="result-box">Your echo is: <span id="ratingMessage">Meh</span></p>
         <table>
             <thead>
                 <tr>
@@ -81,6 +90,7 @@
 
         const ratingTable = document.getElementById("ratingTable");
         const finalScore = document.getElementById("finalScore");
+        const ratingMessage = document.getElementById("ratingMessage");
         const resetButton = document.getElementById("resetButton");
 
         let selectedCount = 0;
@@ -161,7 +171,7 @@
             else if (score >= 7) rating = "Absolute";
             else if (score >= 5) rating = "Quite good";
 
-            document.getElementById("ratingMessage").textContent = `Your echo is ${rating}`;
+            ratingMessage.textContent = rating;
         }
 
         resetButton.addEventListener("click", () => {
