@@ -17,6 +17,7 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
         }
         table {
             width: 100%;
@@ -37,8 +38,11 @@
             padding: 5px;
             text-align: center;
         }
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+        }
         button {
-            margin-top: 20px;
             padding: 10px 20px;
             font-size: 16px;
             background-color: #28a745;
@@ -50,6 +54,15 @@
         button:hover {
             background-color: #218838;
         }
+        .reset-btn {
+            background-color: #dc3545;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .reset-btn:hover {
+            background-color: #c82333;
+        }
         .selected {
             background-color: #A4EDDA !important;
         }
@@ -58,7 +71,7 @@
             padding: 10px;
             margin-top: 15px;
             border-radius: 5px;
-            display: inline-block;
+            display: none;
             font-weight: bold;
             border: 2px solid #388E3C; /* Viền xanh đậm */
         }
@@ -66,10 +79,12 @@
 </head>
 <body>
     <div class="container">
+        <button id="resetButton" class="reset-btn">Reset</button>
         <h1>Wuwa Echo Rating</h1>
         <h3>Mục Chọn Nhập điểm</h3>
-        <p><span class="result-box">Tổng điểm: <span id="finalScore">0</span></span></p>
-        <p class="result-box">Your echo is: <span id="ratingMessage">Meh</span></p>
+        <div class="btn-container">
+            <button id="calculateButton">Tính điểm</button>
+        </div>
         <table>
             <thead>
                 <tr>
@@ -80,7 +95,10 @@
             </thead>
             <tbody id="ratingTable"></tbody>
         </table>
-        <button id="resetButton">Reset</button>
+        <div class="result-box">
+            <p>Tổng điểm: <span id="finalScore">0</span></p>
+            <p>Your echo is: <span id="ratingMessage">Meh</span></p>
+        </div>
     </div>
 
     <script>
@@ -92,6 +110,8 @@
         const finalScore = document.getElementById("finalScore");
         const ratingMessage = document.getElementById("ratingMessage");
         const resetButton = document.getElementById("resetButton");
+        const calculateButton = document.getElementById("calculateButton");
+        const resultBox = document.querySelector(".result-box");
 
         let selectedCount = 0;
 
@@ -139,7 +159,6 @@
                 row.classList.remove("selected");
                 inputCell.children[0].disabled = true;
                 inputCell.children[0].value = "";
-                updateFinalScore();
             }
         }
 
@@ -149,7 +168,6 @@
                 alert(`Giá trị tối đa của ${item} là ${maxValue}!`);
                 input.value = maxValue;
             }
-            updateFinalScore();
         }
 
         function updateFinalScore() {
@@ -163,6 +181,7 @@
             });
             finalScore.textContent = total.toFixed(2);
             updateRating(total);
+            resultBox.style.display = "inline-block";
         }
 
         function updateRating(score) {
@@ -174,6 +193,10 @@
             ratingMessage.textContent = rating;
         }
 
+        calculateButton.addEventListener("click", () => {
+            updateFinalScore();
+        });
+
         resetButton.addEventListener("click", () => {
             document.querySelectorAll("tbody tr").forEach(row => {
                 row.classList.remove("selected");
@@ -182,7 +205,7 @@
                 row.querySelector("input[type='number']").value = "";
             });
             selectedCount = 0;
-            updateFinalScore();
+            resultBox.style.display = "none";
         });
 
         createTable();
