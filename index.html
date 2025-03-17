@@ -12,7 +12,7 @@
             transform: scale(0.9);
         }
         .container {
-            width: 60%;
+            width: 70%;
             margin: auto;
             background: white;
             padding: 20px;
@@ -28,8 +28,12 @@
             margin-bottom: 15px;
             border-radius: 5px;
         }
+        .table-container {
+            display: flex;
+            justify-content: space-between;
+        }
         table {
-            width: 100%;
+            width: 48%;
             border-collapse: collapse;
             margin-top: 20px;
         }
@@ -88,16 +92,29 @@
         <button class="reset-btn" onclick="resetForm()">Reset</button>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Substats</th>
-                <th>Chọn</th>
-                <th>Giá trị</th>
-            </tr>
-        </thead>
-        <tbody id="ratingTable"></tbody>
-    </table>
+    <div class="table-container">
+        <table id="leftTable">
+            <thead>
+                <tr>
+                    <th>Substats</th>
+                    <th>Chọn</th>
+                    <th>Giá trị</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <table id="rightTable">
+            <thead>
+                <tr>
+                    <th>Substats</th>
+                    <th>Chọn</th>
+                    <th>Giá trị</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 </div>
 
 <script>
@@ -117,12 +134,12 @@
         { name: "%HEAVY", max: 11.6 }
     ];
 
-    const ratingTable = document.getElementById("ratingTable");
-    const finalScore = document.getElementById("finalScore");
-    const ratingText = document.getElementById("ratingText");
     let selectedCount = 0;
 
-    function createTable() {
+    function createTables() {
+        const leftTableBody = document.getElementById("leftTable").querySelector("tbody");
+        const rightTableBody = document.getElementById("rightTable").querySelector("tbody");
+
         ratingData.forEach((item, index) => {
             const row = document.createElement("tr");
             const nameCell = document.createElement("td");
@@ -144,7 +161,12 @@
             row.appendChild(nameCell);
             row.appendChild(selectCell);
             row.appendChild(inputCell);
-            ratingTable.appendChild(row);
+
+            if (index < ratingData.length / 2) {
+                leftTableBody.appendChild(row);
+            } else {
+                rightTableBody.appendChild(row);
+            }
         });
     }
 
@@ -197,7 +219,7 @@
         }
 
         total = selectedInputs.reduce((acc, curr) => acc + curr, 0);
-        finalScore.textContent = total.toFixed(2);
+        document.getElementById("finalScore").textContent = total.toFixed(2);
 
         let rating;
         if (total < 5) rating = "Meh";
@@ -205,7 +227,7 @@
         else if (total < 9) rating = "Absolute";
         else rating = "Epic, Fucking god gear!!!";
 
-        ratingText.textContent = rating;
+        document.getElementById("ratingText").textContent = rating;
     }
 
     function resetForm() {
@@ -215,12 +237,12 @@
             row.querySelector("input[type='number']").disabled = true;
             row.querySelector("input[type='number']").value = "";
         });
-        finalScore.textContent = "0";
-        ratingText.textContent = "";
+        document.getElementById("finalScore").textContent = "0";
+        document.getElementById("ratingText").textContent = "";
         selectedCount = 0;
     }
 
-    createTable();
+    createTables();
 </script>
 
 </body>
