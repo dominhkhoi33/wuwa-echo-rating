@@ -56,45 +56,31 @@
     </style>
 </head>
 <body>
-
     <div class="container">
         <h1>Wuwa Echo Rating</h1>
         <h3>Mục Chọn Nhập điểm</h3>
         <p>Tổng điểm: <span id="finalScore">0</span></p>
-        <p>Đánh giá: <span id="ratingText">-</span></p>
-        <button id="resetButton">Reset</button>
-        <table id="ratingTable">
+        <p id="ratingMessage">Your echo is Meh</p>
+        <table>
             <thead>
                 <tr>
                     <th>Mục</th>
                     <th>Chọn</th>
-                    <th>Nhập điểm</th>
+                    <th>Giá trị</th>
                 </tr>
             </thead>
-            <tbody></tbody>
+            <tbody id="ratingTable"></tbody>
         </table>
+        <button id="resetButton">Reset</button>
     </div>
 
     <script>
-        const ratingData = [
-            { name: "%HP", max: 11.6 },
-            { name: "HP", max: 580 },
-            { name: "%DEF", max: 11.6 },
-            { name: "DEF", max: 70 },
-            { name: "%ATK", max: 11.6 },
-            { name: "ATK", max: 60 },
-            { name: "%CRIT", max: 10.5 },
-            { name: "%CRD", max: 21 },
-            { name: "%RS", max: 11.6 },
-            { name: "%RL", max: 11.6 },
-            { name: "%ER", max: 11.6 },
-            { name: "%BASIC", max: 11.6 },
-            { name: "%HEAVY", max: 11.6 }
-        ];
+        const ratingData = ["%HP", "HP", "%DEF", "DEF", "%ATK", "ATK", "%CRIT", "%CRD", "%RS", "%RL", "%ER", "%BASIC", "%HEAVY"];
+        const maxValues = { "HP": 580, "DEF": 70, "ATK": 60, "%CRIT": 10.5, "%CRD": 21 };
+        const defaultMax = 11.6;
 
-        const ratingTable = document.getElementById("ratingTable").querySelector("tbody");
+        const ratingTable = document.getElementById("ratingTable");
         const finalScore = document.getElementById("finalScore");
-        const ratingText = document.getElementById("ratingText");
         const resetButton = document.getElementById("resetButton");
 
         let selectedCount = 0;
@@ -104,42 +90,40 @@
                 const row = document.createElement("tr");
 
                 const nameCell = document.createElement("td");
-                nameCell.textContent = item.name;
+                nameCell.textContent = item;
+                row.appendChild(nameCell);
 
                 const selectCell = document.createElement("td");
                 const selectBox = document.createElement("input");
                 selectBox.type = "checkbox";
-                selectBox.addEventListener("change", () => handleSelect(row, selectBox, inputCell, item.max));
-
+                selectBox.addEventListener("change", () => handleSelect(row, selectBox, inputCell));
                 selectCell.appendChild(selectBox);
+                row.appendChild(selectCell);
 
                 const inputCell = document.createElement("td");
                 const inputBox = document.createElement("input");
                 inputBox.type = "number";
                 inputBox.min = 0;
-                inputBox.max = item.max;
+                inputBox.max = maxValues[item] || defaultMax;
                 inputBox.disabled = true;
-                inputBox.addEventListener("input", updateFinalScore);
-
+                inputBox.addEventListener("input", () => handleInputValidation(inputBox, item));
                 inputCell.appendChild(inputBox);
-
-                row.appendChild(nameCell);
-                row.appendChild(selectCell);
                 row.appendChild(inputCell);
+
                 ratingTable.appendChild(row);
             });
         }
 
-        function handleSelect(row, checkbox, inputCell, maxValue) {
+        function handleSelect(row, checkbox, inputCell) {
             if (checkbox.checked) {
                 if (selectedCount >= 5) {
+                    alert("Bạn chỉ có thể chọn tối đa 5 mục!");
                     checkbox.checked = false;
                     return;
                 }
                 selectedCount++;
                 row.classList.add("selected");
                 inputCell.children[0].disabled = false;
-                inputCell.children[0].max = maxValue;
             } else {
                 selectedCount--;
                 row.classList.remove("selected");
@@ -149,48 +133,49 @@
             }
         }
 
+        function handleInputValidation(input, item) {
+            const maxValue = maxValues[item] || defaultMax;
+            if (parseFloat(input.value) > maxValue) {
+                alert(`Giá trị tối đa của ${item} là ${maxValue}!`);
+                input.value = maxValue;
+            }
+            updateFinalScore();
+        }
+
         function updateFinalScore() {
             let total = 0;
             document.querySelectorAll("tbody tr").forEach(row => {
-                const checkbox = row.querySelector("input[type=checkbox]");
-                const input = row.querySelector("input[type=number]");
-                const maxValue = parseFloat(input.max);
-
-                if (checkbox.checked && input.value) {
+                const input = row.querySelector("input[type='number']");
+                if (input && input.value) {
+                    const maxValue = maxValues[row.cells[0].textContent] || defaultMax;
                     total += (parseFloat(input.value) / maxValue) * 2;
                 }
             });
-
             finalScore.textContent = total.toFixed(2);
-            updateRatingText(total);
+            updateRating(total);
         }
 
-        function updateRatingText(score) {
-            if (score < 5) {
-                ratingText.textContent = "Meh";
-            } else if (score < 7) {
-                ratingText.textContent = "Quite good";
-            } else if (score < 9) {
-                ratingText.textContent = "Absolute";
-            } else {
-                ratingText.textContent = "Epic, Fucking god gear!!!";
-            }
+        function updateRating(score) {
+            let rating = "Meh";
+            if (score >= 9) rating = "Epic, Fucking god gear!!!";
+            else if (score >= 7) rating = "Absolute";
+            else if (score >= 5) rating = "Quite good";
+
+            document.getElementById("ratingMessage").textContent = `Your echo is ${rating}`;
         }
 
         resetButton.addEventListener("click", () => {
             document.querySelectorAll("tbody tr").forEach(row => {
                 row.classList.remove("selected");
-                row.querySelector("input[type=checkbox]").checked = false;
-                row.querySelector("input[type=number]").disabled = true;
-                row.querySelector("input[type=number]").value = "";
+                row.querySelector("input[type='checkbox']").checked = false;
+                row.querySelector("input[type='number']").disabled = true;
+                row.querySelector("input[type='number']").value = "";
             });
             selectedCount = 0;
-            finalScore.textContent = "0";
-            ratingText.textContent = "-";
+            updateFinalScore();
         });
 
         createTable();
     </script>
-
 </body>
 </html>
