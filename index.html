@@ -1,102 +1,158 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rating System</title>
-    <style>
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid black; padding: 10px; text-align: center; }
-        .highlight { background-color: lightblue; }
-    </style>
+    <title>Wuwa Echo Rating</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h2>Rating System</h2>
-    <table>
-        <tr id="headers">
-            <th>Criteria</th>
-            <th>Selected</th>
-            <th>Input</th>
-            <th>Score</th>
-        </tr>
-        <tbody id="ratingTable"></tbody>
-    </table>
-    <p>Final Score: <span id="finalScore">0</span></p>
-    <button onclick="resetForm()">Reset</button>
-    
-    <script>
-        const criteria = ["Criterion 1", "Criterion 2", "Criterion 3", "Criterion 4", "Criterion 5", "Criterion 6", "Criterion 7", "Criterion 8", "Criterion 9", "Criterion 10", "Criterion 11"];
-        const maxSelection = 5;
-        let selectedCount = 0;
-        
-        function createTable() {
-            const table = document.getElementById("ratingTable");
-            table.innerHTML = "";
-            criteria.forEach((criterion, index) => {
-                const row = table.insertRow();
-                
-                const cell1 = row.insertCell(0);
-                cell1.textContent = criterion;
-                
-                const cell2 = row.insertCell(1);
-                const select = document.createElement("select");
-                select.innerHTML = "<option value='No'>No</option><option value='Yes'>Yes</option>";
-                select.onchange = () => toggleInput(index, row, select);
-                cell2.appendChild(select);
-                
-                const cell3 = row.insertCell(2);
-                const input = document.createElement("input");
-                input.type = "number";
-                input.disabled = true;
-                input.oninput = calculateScore;
-                cell3.appendChild(input);
-                
-                const cell4 = row.insertCell(3);
-                cell4.textContent = "0";
-            });
-        }
-        
-        function toggleInput(index, row, select) {
-            const input = row.cells[2].querySelector("input");
-            if (select.value === "Yes") {
-                if (selectedCount >= maxSelection) {
-                    select.value = "No";
-                    return;
-                }
-                selectedCount++;
-                input.disabled = false;
-                row.classList.add("highlight");
-            } else {
-                selectedCount--;
-                input.disabled = true;
-                input.value = "";
-                row.cells[3].textContent = "0";
-                row.classList.remove("highlight");
-            }
-            calculateScore();
-        }
-        
-        function calculateScore() {
-            let total = 0;
-            const table = document.getElementById("ratingTable");
-            for (let row of table.rows) {
-                const input = row.cells[2].querySelector("input");
-                if (input && !input.disabled && input.value) {
-                    const score = parseInt(input.value) || 0;
-                    row.cells[3].textContent = score;
-                    total += score;
-                }
-            }
-            document.getElementById("finalScore").textContent = total;
-        }
-        
-        function resetForm() {
-            selectedCount = 0;
-            createTable();
-            document.getElementById("finalScore").textContent = "0";
-        }
-        
-        createTable();
-    </script>
+    <div class="container">
+        <h1>Wuwa Echo Rating</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Mục</th>
+                    <th>Chọn</th>
+                    <th>Nhập điểm</th>
+                </tr>
+            </thead>
+            <tbody id="ratingTable">
+                <!-- Các hàng dữ liệu sẽ được tạo bằng JS -->
+            </tbody>
+        </table>
+        <div class="final-score">
+            Tổng điểm: <span id="finalScore">0</span>
+        </div>
+        <button id="resetButton">Reset</button>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
+
+/* style.css */
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #f4f4f4;
+}
+.container {
+    width: 50%;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+th {
+    background-color: #007BFF;
+    color: white;
+}
+input[type="number"] {
+    width: 60px;
+    padding: 5px;
+    text-align: center;
+}
+button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #218838;
+}
+.selected {
+    background-color: #d4edda !important;
+}
+
+/* script.js */
+const ratingData = ["Mục 1", "Mục 2", "Mục 3", "Mục 4", "Mục 5", "Mục 6", "Mục 7", "Mục 8", "Mục 9", "Mục 10"];
+const ratingTable = document.getElementById("ratingTable");
+const finalScore = document.getElementById("finalScore");
+const resetButton = document.getElementById("resetButton");
+let selectedCount = 0;
+
+function createTable() {
+    ratingData.forEach((item, index) => {
+        const row = document.createElement("tr");
+        
+        const nameCell = document.createElement("td");
+        nameCell.textContent = item;
+        
+        const selectCell = document.createElement("td");
+        const selectBox = document.createElement("input");
+        selectBox.type = "checkbox";
+        selectBox.addEventListener("change", () => handleSelect(row, selectBox, inputCell));
+        selectCell.appendChild(selectBox);
+        
+        const inputCell = document.createElement("td");
+        const inputBox = document.createElement("input");
+        inputBox.type = "number";
+        inputBox.min = 0;
+        inputBox.max = 10;
+        inputBox.disabled = true;
+        inputBox.addEventListener("input", updateFinalScore);
+        inputCell.appendChild(inputBox);
+        
+        row.appendChild(nameCell);
+        row.appendChild(selectCell);
+        row.appendChild(inputCell);
+        ratingTable.appendChild(row);
+    });
+}
+
+function handleSelect(row, checkbox, inputCell) {
+    if (checkbox.checked) {
+        if (selectedCount >= 5) {
+            checkbox.checked = false;
+            return;
+        }
+        selectedCount++;
+        row.classList.add("selected");
+        inputCell.children[0].disabled = false;
+    } else {
+        selectedCount--;
+        row.classList.remove("selected");
+        inputCell.children[0].disabled = true;
+        inputCell.children[0].value = "";
+        updateFinalScore();
+    }
+}
+
+function updateFinalScore() {
+    let total = 0;
+    document.querySelectorAll("tbody input[type=number]").forEach(input => {
+        if (!input.disabled && input.value) {
+            total += parseInt(input.value, 10);
+        }
+    });
+    finalScore.textContent = total;
+}
+
+resetButton.addEventListener("click", () => {
+    document.querySelectorAll("tbody tr").forEach(row => {
+        row.classList.remove("selected");
+        row.querySelector("input[type=checkbox]").checked = false;
+        row.querySelector("input[type=number]").disabled = true;
+        row.querySelector("input[type=number]").value = "";
+    });
+    selectedCount = 0;
+    updateFinalScore();
+});
+
+createTable();
