@@ -1,4 +1,102 @@
-<html>
-<head><title>Test Page</title></head>
-<body><h1>Hello, GitHub Pages!</h1></body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rating System</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid black; padding: 10px; text-align: center; }
+        .highlight { background-color: lightblue; }
+    </style>
+</head>
+<body>
+    <h2>Rating System</h2>
+    <table>
+        <tr id="headers">
+            <th>Criteria</th>
+            <th>Selected</th>
+            <th>Input</th>
+            <th>Score</th>
+        </tr>
+        <tbody id="ratingTable"></tbody>
+    </table>
+    <p>Final Score: <span id="finalScore">0</span></p>
+    <button onclick="resetForm()">Reset</button>
+    
+    <script>
+        const criteria = ["Criterion 1", "Criterion 2", "Criterion 3", "Criterion 4", "Criterion 5", "Criterion 6", "Criterion 7", "Criterion 8", "Criterion 9", "Criterion 10", "Criterion 11"];
+        const maxSelection = 5;
+        let selectedCount = 0;
+        
+        function createTable() {
+            const table = document.getElementById("ratingTable");
+            table.innerHTML = "";
+            criteria.forEach((criterion, index) => {
+                const row = table.insertRow();
+                
+                const cell1 = row.insertCell(0);
+                cell1.textContent = criterion;
+                
+                const cell2 = row.insertCell(1);
+                const select = document.createElement("select");
+                select.innerHTML = "<option value='No'>No</option><option value='Yes'>Yes</option>";
+                select.onchange = () => toggleInput(index, row, select);
+                cell2.appendChild(select);
+                
+                const cell3 = row.insertCell(2);
+                const input = document.createElement("input");
+                input.type = "number";
+                input.disabled = true;
+                input.oninput = calculateScore;
+                cell3.appendChild(input);
+                
+                const cell4 = row.insertCell(3);
+                cell4.textContent = "0";
+            });
+        }
+        
+        function toggleInput(index, row, select) {
+            const input = row.cells[2].querySelector("input");
+            if (select.value === "Yes") {
+                if (selectedCount >= maxSelection) {
+                    select.value = "No";
+                    return;
+                }
+                selectedCount++;
+                input.disabled = false;
+                row.classList.add("highlight");
+            } else {
+                selectedCount--;
+                input.disabled = true;
+                input.value = "";
+                row.cells[3].textContent = "0";
+                row.classList.remove("highlight");
+            }
+            calculateScore();
+        }
+        
+        function calculateScore() {
+            let total = 0;
+            const table = document.getElementById("ratingTable");
+            for (let row of table.rows) {
+                const input = row.cells[2].querySelector("input");
+                if (input && !input.disabled && input.value) {
+                    const score = parseInt(input.value) || 0;
+                    row.cells[3].textContent = score;
+                    total += score;
+                }
+            }
+            document.getElementById("finalScore").textContent = total;
+        }
+        
+        function resetForm() {
+            selectedCount = 0;
+            createTable();
+            document.getElementById("finalScore").textContent = "0";
+        }
+        
+        createTable();
+    </script>
+</body>
 </html>
