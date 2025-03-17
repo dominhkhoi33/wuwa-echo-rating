@@ -9,9 +9,11 @@
             font-family: Arial, sans-serif;
             text-align: center;
             background-color: #f4f4f4;
+            transform: scale(0.9);
+            transform-origin: top;
         }
         .container {
-            width: 50%;
+            width: 70%;
             margin: auto;
             background: white;
             padding: 20px;
@@ -19,14 +21,23 @@
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
             position: relative;
         }
+        .result-box {
+            background-color: #C8E6C9;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            display: none;
+            font-weight: bold;
+            border: 2px solid #388E3C;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 10px;
         }
         th, td {
             border: 1px solid #ddd;
-            padding: 10px;
+            padding: 8px;
             text-align: center;
         }
         th {
@@ -41,10 +52,11 @@
         .btn-container {
             display: flex;
             justify-content: space-between;
+            margin-bottom: 10px;
         }
         button {
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 10px 15px;
+            font-size: 14px;
             background-color: #28a745;
             color: white;
             border: none;
@@ -66,14 +78,12 @@
         .selected {
             background-color: #A4EDDA !important;
         }
-        .result-box {
-            background-color: #C8E6C9; /* Xanh lục nhạt */
-            padding: 10px;
-            margin-top: 15px;
-            border-radius: 5px;
-            display: none;
-            font-weight: bold;
-            border: 2px solid #388E3C; /* Viền xanh đậm */
+        .table-container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .half-table {
+            width: 48%;
         }
     </style>
 </head>
@@ -81,23 +91,37 @@
     <div class="container">
         <button id="resetButton" class="reset-btn">Reset</button>
         <h1>Wuwa Echo Rating</h1>
-        <h3>Mục Chọn Nhập điểm</h3>
+
+        <div class="result-box">
+            <p><strong>Tổng điểm:</strong> <span id="finalScore">0</span></p>
+            <p><strong>Your echo is:</strong> <span id="ratingMessage">Meh</span></p>
+        </div>
+
         <div class="btn-container">
             <button id="calculateButton">Tính điểm</button>
         </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Mục</th>
-                    <th>Chọn</th>
-                    <th>Giá trị</th>
-                </tr>
-            </thead>
-            <tbody id="ratingTable"></tbody>
-        </table>
-        <div class="result-box">
-            <p>Tổng điểm: <span id="finalScore">0</span></p>
-            <p>Your echo is: <span id="ratingMessage">Meh</span></p>
+
+        <div class="table-container">
+            <table class="half-table">
+                <thead>
+                    <tr>
+                        <th>Substats</th>
+                        <th>Chọn</th>
+                        <th>Giá trị</th>
+                    </tr>
+                </thead>
+                <tbody id="leftTable"></tbody>
+            </table>
+            <table class="half-table">
+                <thead>
+                    <tr>
+                        <th>Substats</th>
+                        <th>Chọn</th>
+                        <th>Giá trị</th>
+                    </tr>
+                </thead>
+                <tbody id="rightTable"></tbody>
+            </table>
         </div>
     </div>
 
@@ -106,7 +130,8 @@
         const maxValues = { "HP": 580, "DEF": 70, "ATK": 60, "%CRIT": 10.5, "%CRD": 21 };
         const defaultMax = 11.6;
 
-        const ratingTable = document.getElementById("ratingTable");
+        const leftTable = document.getElementById("leftTable");
+        const rightTable = document.getElementById("rightTable");
         const finalScore = document.getElementById("finalScore");
         const ratingMessage = document.getElementById("ratingMessage");
         const resetButton = document.getElementById("resetButton");
@@ -116,7 +141,7 @@
         let selectedCount = 0;
 
         function createTable() {
-            ratingData.forEach((item) => {
+            ratingData.forEach((item, index) => {
                 const row = document.createElement("tr");
 
                 const nameCell = document.createElement("td");
@@ -140,7 +165,11 @@
                 inputCell.appendChild(inputBox);
                 row.appendChild(inputCell);
 
-                ratingTable.appendChild(row);
+                if (index < ratingData.length / 2) {
+                    leftTable.appendChild(row);
+                } else {
+                    rightTable.appendChild(row);
+                }
             });
         }
 
@@ -164,6 +193,11 @@
 
         function handleInputValidation(input, item) {
             const maxValue = maxValues[item] || defaultMax;
+            if (!input.previousElementSibling.checked) {
+                alert("Xin tick chọn trước dòng substats!");
+                input.value = "";
+                return;
+            }
             if (parseFloat(input.value) > maxValue) {
                 alert(`Giá trị tối đa của ${item} là ${maxValue}!`);
                 input.value = maxValue;
@@ -193,9 +227,7 @@
             ratingMessage.textContent = rating;
         }
 
-        calculateButton.addEventListener("click", () => {
-            updateFinalScore();
-        });
+        calculateButton.addEventListener("click", () => updateFinalScore());
 
         resetButton.addEventListener("click", () => {
             document.querySelectorAll("tbody tr").forEach(row => {
