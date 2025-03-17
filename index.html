@@ -2,182 +2,155 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=0.9">
     <title>Wuwa Echo Rating</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
             background-color: #f4f4f4;
-            transform: scale(0.9);
-            transform-origin: top;
+            text-align: center;
         }
+
         .container {
-            width: 70%;
+            width: 60%;
             margin: auto;
             background: white;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            position: relative;
         }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
         .result-box {
-            background-color: #C8E6C9;
-            padding: 10px;
-            margin-bottom: 10px;
+            background-color: #d4edda;
             border-radius: 5px;
-            display: none;
-            font-weight: bold;
-            border: 2px solid #388E3C;
+            padding: 10px;
+            display: inline-block;
+            border: 2px solid green;
         }
+
+        .result-box h2, .result-box p {
+            margin: 5px 0;
+            font-weight: bold;
+        }
+
+        .button-container {
+            margin: 20px 0;
+        }
+
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            border: none;
+        }
+
+        .reset-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .calc-btn {
+            background-color: #28a745;
+            color: white;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            margin-top: 20px;
         }
+
         th, td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 10px;
             text-align: center;
         }
+
         th {
             background-color: #007BFF;
             color: white;
         }
-        input[type="number"] {
-            width: 60px;
-            padding: 5px;
-            text-align: center;
-        }
-        .btn-container {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        button {
-            padding: 10px 15px;
-            font-size: 14px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #218838;
-        }
-        .reset-btn {
-            background-color: #dc3545;
-            position: absolute;
-            top: 10px;
-            right: 10px;
-        }
-        .reset-btn:hover {
-            background-color: #c82333;
-        }
+
         .selected {
-            background-color: #A4EDDA !important;
+            background-color: #A4D4DA !important;
         }
-        .table-container {
-            display: flex;
-            justify-content: space-between;
-        }
-        .half-table {
-            width: 48%;
+
+        input[type="number"] {
+            width: 70px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <button id="resetButton" class="reset-btn">Reset</button>
         <h1>Wuwa Echo Rating</h1>
-
         <div class="result-box">
-            <p><strong>Tổng điểm:</strong> <span id="finalScore">0</span></p>
-            <p><strong>Your echo is:</strong> <span id="ratingMessage">Meh</span></p>
+            <h2>Tổng điểm: <span id="finalScore">0</span></h2>
+            <p>Your echo is: <span id="ratingText">Meh</span></p>
         </div>
-
-        <div class="btn-container">
-            <button id="calculateButton">Tính điểm</button>
+        <div class="button-container">
+            <button id="resetButton" class="reset-btn">Reset</button>
+            <button id="calculateButton" class="calc-btn">Tính điểm</button>
         </div>
-
-        <div class="table-container">
-            <table class="half-table">
-                <thead>
-                    <tr>
-                        <th>Substats</th>
-                        <th>Chọn</th>
-                        <th>Giá trị</th>
-                    </tr>
-                </thead>
-                <tbody id="leftTable"></tbody>
-            </table>
-            <table class="half-table">
-                <thead>
-                    <tr>
-                        <th>Substats</th>
-                        <th>Chọn</th>
-                        <th>Giá trị</th>
-                    </tr>
-                </thead>
-                <tbody id="rightTable"></tbody>
-            </table>
-        </div>
+        <table id="ratingTable">
+            <thead>
+                <tr>
+                    <th>Substats</th>
+                    <th>Chọn</th>
+                    <th>Giá trị</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
     </div>
 
     <script>
         const ratingData = ["%HP", "HP", "%DEF", "DEF", "%ATK", "ATK", "%CRIT", "%CRD", "%RS", "%RL", "%ER", "%BASIC", "%HEAVY"];
         const maxValues = { "HP": 580, "DEF": 70, "ATK": 60, "%CRIT": 10.5, "%CRD": 21 };
         const defaultMax = 11.6;
-
-        const leftTable = document.getElementById("leftTable");
-        const rightTable = document.getElementById("rightTable");
+        const ratingTable = document.getElementById("ratingTable").querySelector("tbody");
         const finalScore = document.getElementById("finalScore");
-        const ratingMessage = document.getElementById("ratingMessage");
+        const ratingText = document.getElementById("ratingText");
         const resetButton = document.getElementById("resetButton");
         const calculateButton = document.getElementById("calculateButton");
-        const resultBox = document.querySelector(".result-box");
-
         let selectedCount = 0;
 
         function createTable() {
-            ratingData.forEach((item, index) => {
+            ratingData.forEach((item) => {
                 const row = document.createElement("tr");
-
                 const nameCell = document.createElement("td");
                 nameCell.textContent = item;
-                row.appendChild(nameCell);
 
                 const selectCell = document.createElement("td");
                 const selectBox = document.createElement("input");
                 selectBox.type = "checkbox";
                 selectBox.addEventListener("change", () => handleSelect(row, selectBox, inputCell));
                 selectCell.appendChild(selectBox);
-                row.appendChild(selectCell);
 
                 const inputCell = document.createElement("td");
                 const inputBox = document.createElement("input");
                 inputBox.type = "number";
-                inputBox.min = 0;
-                inputBox.max = maxValues[item] || defaultMax;
                 inputBox.disabled = true;
                 inputBox.addEventListener("input", () => handleInputValidation(inputBox, item));
                 inputCell.appendChild(inputBox);
-                row.appendChild(inputCell);
 
-                if (index < ratingData.length / 2) {
-                    leftTable.appendChild(row);
-                } else {
-                    rightTable.appendChild(row);
-                }
+                row.appendChild(nameCell);
+                row.appendChild(selectCell);
+                row.appendChild(inputCell);
+                ratingTable.appendChild(row);
             });
         }
 
         function handleSelect(row, checkbox, inputCell) {
             if (checkbox.checked) {
                 if (selectedCount >= 5) {
-                    alert("Bạn chỉ có thể chọn tối đa 5 mục!");
                     checkbox.checked = false;
+                    alert("Bạn chỉ có thể chọn tối đa 5 substats!");
                     return;
                 }
                 selectedCount++;
@@ -193,52 +166,69 @@
 
         function handleInputValidation(input, item) {
             const maxValue = maxValues[item] || defaultMax;
+            
             if (!input.previousElementSibling.checked) {
                 alert("Xin tick chọn trước dòng substats!");
                 input.value = "";
                 return;
             }
-            if (parseFloat(input.value) > maxValue) {
+
+            let inputValue = parseFloat(input.value);
+            if (inputValue > maxValue) {
                 alert(`Giá trị tối đa của ${item} là ${maxValue}!`);
                 input.value = maxValue;
             }
         }
 
-        function updateFinalScore() {
+        function calculateScore() {
             let total = 0;
+            let count = 0;
             document.querySelectorAll("tbody tr").forEach(row => {
-                const input = row.querySelector("input[type='number']");
-                if (input && input.value) {
-                    const maxValue = maxValues[row.cells[0].textContent] || defaultMax;
+                const checkbox = row.querySelector("input[type=checkbox]");
+                const input = row.querySelector("input[type=number]");
+                
+                if (checkbox.checked && input.value) {
+                    const statName = row.cells[0].textContent;
+                    const maxValue = maxValues[statName] || defaultMax;
                     total += (parseFloat(input.value) / maxValue) * 2;
+                    count++;
                 }
             });
-            finalScore.textContent = total.toFixed(2);
-            updateRating(total);
-            resultBox.style.display = "inline-block";
+
+            if (count > 0) {
+                finalScore.textContent = total.toFixed(2);
+                updateRating(total);
+            } else {
+                finalScore.textContent = "0";
+                ratingText.textContent = "Meh";
+            }
         }
 
         function updateRating(score) {
-            let rating = "Meh";
-            if (score >= 9) rating = "Epic, Fucking god gear!!!";
-            else if (score >= 7) rating = "Absolute";
-            else if (score >= 5) rating = "Quite good";
-
-            ratingMessage.textContent = rating;
+            if (score < 5) {
+                ratingText.textContent = "Meh";
+            } else if (score < 7) {
+                ratingText.textContent = "Quite good";
+            } else if (score < 9) {
+                ratingText.textContent = "Absolute";
+            } else {
+                ratingText.textContent = "Epic, Fucking god gear!!!";
+            }
         }
-
-        calculateButton.addEventListener("click", () => updateFinalScore());
 
         resetButton.addEventListener("click", () => {
             document.querySelectorAll("tbody tr").forEach(row => {
                 row.classList.remove("selected");
-                row.querySelector("input[type='checkbox']").checked = false;
-                row.querySelector("input[type='number']").disabled = true;
-                row.querySelector("input[type='number']").value = "";
+                row.querySelector("input[type=checkbox]").checked = false;
+                row.querySelector("input[type=number]").disabled = true;
+                row.querySelector("input[type=number]").value = "";
             });
+            finalScore.textContent = "0";
+            ratingText.textContent = "Meh";
             selectedCount = 0;
-            resultBox.style.display = "none";
         });
+
+        calculateButton.addEventListener("click", calculateScore);
 
         createTable();
     </script>
