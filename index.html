@@ -4,12 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wuwa Echo Rating</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 50%;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+        input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            text-align: center;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .selected {
+            background-color: #A4EDDA !important;
+        }
+    </style>
 </head>
 <body>
+
     <div class="container">
         <h1>Wuwa Echo Rating</h1>
-        <table>
+        <h3>Mục Chọn Nhập điểm</h3>
+        <p>Tổng điểm: <span id="finalScore">0</span></p>
+        <button id="resetButton">Reset</button>
+        <table id="ratingTable">
             <thead>
                 <tr>
                     <th>Mục</th>
@@ -17,142 +70,91 @@
                     <th>Nhập điểm</th>
                 </tr>
             </thead>
-            <tbody id="ratingTable">
-                <!-- Các hàng dữ liệu sẽ được tạo bằng JS -->
-            </tbody>
+            <tbody></tbody>
         </table>
-        <div class="final-score">
-            Tổng điểm: <span id="finalScore">0</span>
-        </div>
-        <button id="resetButton">Reset</button>
     </div>
-    <script src="script.js"></script>
+
+    <script>
+        const ratingData = ["Mục 1", "Mục 2", "Mục 3", "Mục 4", "Mục 5", "Mục 6", "Mục 7", "Mục 8", "Mục 9", "Mục 10"];
+        const ratingTable = document.getElementById("ratingTable").querySelector("tbody");
+        const finalScore = document.getElementById("finalScore");
+        const resetButton = document.getElementById("resetButton");
+
+        let selectedCount = 0;
+
+        function createTable() {
+            ratingData.forEach((item, index) => {
+                const row = document.createElement("tr");
+
+                const nameCell = document.createElement("td");
+                nameCell.textContent = item;
+
+                const selectCell = document.createElement("td");
+                const selectBox = document.createElement("input");
+                selectBox.type = "checkbox";
+                selectBox.addEventListener("change", () => handleSelect(row, selectBox, inputCell));
+
+                selectCell.appendChild(selectBox);
+
+                const inputCell = document.createElement("td");
+                const inputBox = document.createElement("input");
+                inputBox.type = "number";
+                inputBox.min = 0;
+                inputBox.max = 10;
+                inputBox.disabled = true;
+                inputBox.addEventListener("input", updateFinalScore);
+
+                inputCell.appendChild(inputBox);
+
+                row.appendChild(nameCell);
+                row.appendChild(selectCell);
+                row.appendChild(inputCell);
+                ratingTable.appendChild(row);
+            });
+        }
+
+        function handleSelect(row, checkbox, inputCell) {
+            if (checkbox.checked) {
+                if (selectedCount >= 5) {
+                    checkbox.checked = false;
+                    return;
+                }
+                selectedCount++;
+                row.classList.add("selected");
+                inputCell.children[0].disabled = false;
+            } else {
+                selectedCount--;
+                row.classList.remove("selected");
+                inputCell.children[0].disabled = true;
+                inputCell.children[0].value = "";
+                updateFinalScore();
+            }
+        }
+
+        function updateFinalScore() {
+            let total = 0;
+            document.querySelectorAll("tbody tr").forEach(row => {
+                const input = row.querySelector("input[type=number]");
+                if (!input.disabled && input.value) {
+                    total += parseInt(input.value, 10);
+                }
+            });
+            finalScore.textContent = total;
+        }
+
+        resetButton.addEventListener("click", () => {
+            document.querySelectorAll("tbody tr").forEach(row => {
+                row.classList.remove("selected");
+                row.querySelector("input[type=checkbox]").checked = false;
+                row.querySelector("input[type=number]").disabled = true;
+                row.querySelector("input[type=number]").value = "";
+            });
+            selectedCount = 0;
+            updateFinalScore();
+        });
+
+        createTable();
+    </script>
+
 </body>
 </html>
-
-/* style.css */
-body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    background-color: #f4f4f4;
-}
-.container {
-    width: 50%;
-    margin: auto;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-}
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-th, td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: center;
-}
-th {
-    background-color: #007BFF;
-    color: white;
-}
-input[type="number"] {
-    width: 60px;
-    padding: 5px;
-    text-align: center;
-}
-button {
-    margin-top: 20px;
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-button:hover {
-    background-color: #218838;
-}
-.selected {
-    background-color: #d4edda !important;
-}
-
-/* script.js */
-const ratingData = ["Mục 1", "Mục 2", "Mục 3", "Mục 4", "Mục 5", "Mục 6", "Mục 7", "Mục 8", "Mục 9", "Mục 10"];
-const ratingTable = document.getElementById("ratingTable");
-const finalScore = document.getElementById("finalScore");
-const resetButton = document.getElementById("resetButton");
-let selectedCount = 0;
-
-function createTable() {
-    ratingData.forEach((item, index) => {
-        const row = document.createElement("tr");
-        
-        const nameCell = document.createElement("td");
-        nameCell.textContent = item;
-        
-        const selectCell = document.createElement("td");
-        const selectBox = document.createElement("input");
-        selectBox.type = "checkbox";
-        selectBox.addEventListener("change", () => handleSelect(row, selectBox, inputCell));
-        selectCell.appendChild(selectBox);
-        
-        const inputCell = document.createElement("td");
-        const inputBox = document.createElement("input");
-        inputBox.type = "number";
-        inputBox.min = 0;
-        inputBox.max = 10;
-        inputBox.disabled = true;
-        inputBox.addEventListener("input", updateFinalScore);
-        inputCell.appendChild(inputBox);
-        
-        row.appendChild(nameCell);
-        row.appendChild(selectCell);
-        row.appendChild(inputCell);
-        ratingTable.appendChild(row);
-    });
-}
-
-function handleSelect(row, checkbox, inputCell) {
-    if (checkbox.checked) {
-        if (selectedCount >= 5) {
-            checkbox.checked = false;
-            return;
-        }
-        selectedCount++;
-        row.classList.add("selected");
-        inputCell.children[0].disabled = false;
-    } else {
-        selectedCount--;
-        row.classList.remove("selected");
-        inputCell.children[0].disabled = true;
-        inputCell.children[0].value = "";
-        updateFinalScore();
-    }
-}
-
-function updateFinalScore() {
-    let total = 0;
-    document.querySelectorAll("tbody input[type=number]").forEach(input => {
-        if (!input.disabled && input.value) {
-            total += parseInt(input.value, 10);
-        }
-    });
-    finalScore.textContent = total;
-}
-
-resetButton.addEventListener("click", () => {
-    document.querySelectorAll("tbody tr").forEach(row => {
-        row.classList.remove("selected");
-        row.querySelector("input[type=checkbox]").checked = false;
-        row.querySelector("input[type=number]").disabled = true;
-        row.querySelector("input[type=number]").value = "";
-    });
-    selectedCount = 0;
-    updateFinalScore();
-});
-
-createTable();
