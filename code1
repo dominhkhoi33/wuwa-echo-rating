@@ -1,0 +1,95 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+
+export default function RatingSystem() {
+  const options = ["Opt 1", "Opt 2", "Opt 3", "Opt 4", "Opt 5", "Opt 6", "Opt 7", "Opt 8", "Opt 9", "Opt 10", "Opt 11"]; // Dummy data
+  const maxSelections = 5;
+
+  const [selections, setSelections] = useState(Array(options.length).fill("No"));
+  const [values, setValues] = useState(Array(options.length).fill(""));
+
+  const handleSelectionChange = (index) => {
+    const newSelections = [...selections];
+    const countYes = newSelections.filter((val) => val === "Yes").length;
+    if (newSelections[index] === "Yes") {
+      newSelections[index] = "No";
+    } else if (countYes < maxSelections) {
+      newSelections[index] = "Yes";
+    }
+    setSelections(newSelections);
+  };
+
+  const handleValueChange = (index, newValue) => {
+    if (selections[index] === "Yes") {
+      const newValues = [...values];
+      newValues[index] = newValue;
+      setValues(newValues);
+    }
+  };
+
+  const resetValues = () => {
+    setSelections(Array(options.length).fill("No"));
+    setValues(Array(options.length).fill(""));
+  };
+
+  const totalScore = values.reduce((acc, val) => acc + (parseFloat(val) || 0), 0);
+  let rating = "Gear Cùi";
+  if (totalScore > 9) rating = "Thần Khí";
+  else if (totalScore > 7) rating = "Siêu Giai";
+  else if (totalScore > 5) rating = "Gear Tạm Được";
+
+  return (
+    <div className="p-4">
+      <h1 className="text-xl font-bold mb-4">Rating System</h1>
+      <table className="border w-full mb-4">
+        <thead>
+          <tr>
+            {options.map((opt, index) => (
+              <th key={index} className="border p-2">{opt}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            {options.map((_, index) => (
+              <td key={index} className="border p-2">
+                <select
+                  value={selections[index]}
+                  onChange={() => handleSelectionChange(index)}
+                  className="border p-1 w-full"
+                >
+                  <option value="No">No</option>
+                  <option value="Yes">Yes</option>
+                </select>
+              </td>
+            ))}
+          </tr>
+          <tr>
+            {options.map((_, index) => (
+              <td key={index} className="border p-2">
+                <input
+                  type="number"
+                  value={values[index]}
+                  onChange={(e) => handleValueChange(index, e.target.value)}
+                  className="border p-1 w-full"
+                  disabled={selections[index] !== "Yes"}
+                />
+              </td>
+            ))}
+          </tr>
+        </tbody>
+      </table>
+      <div className="mb-4">
+        <strong>Final Score:</strong> {totalScore}
+      </div>
+      <div className="mb-4 p-2 border inline-block bg-gray-200">
+        <strong>Đánh giá:</strong> {rating}
+      </div>
+      <div>
+        <Button onClick={resetValues} className="bg-red-500 text-white">
+          Reset
+        </Button>
+      </div>
+    </div>
+  );
+}
